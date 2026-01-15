@@ -1,141 +1,247 @@
-# Thai RAG Chatbot 🤖💬
+<div align="center">
 
-ระบบ Chatbot อัจฉริยะที่ใช้ RAG (Retrieval-Augmented Generation) เพื่อตอบคำถามจากเอกสารที่อัพโหลด พร้อมรองรับภาษาไทยได้ดีเยี่ยม
+# 🤖 Thai RAG Chatbot
 
-![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js)
-![Express](https://img.shields.io/badge/Express-4.x-blue?logo=express)
-![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite)
-![Gemini](https://img.shields.io/badge/Gemini-AI-4285F4?logo=google)
+### ระบบ Chatbot อัจฉริยะที่ตอบคำถามจากเอกสาร พร้อมรองรับภาษาไทย
+
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.x-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
+[![Gemini](https://img.shields.io/badge/Gemini-AI-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Ollama](https://img.shields.io/badge/Ollama-Local-white?style=for-the-badge&logo=ollama&logoColor=black)](https://ollama.ai/)
+
+[Features](#-features) •
+[Installation](#-installation) •
+[Usage](#-usage) •
+[Configuration](#%EF%B8%8F-configuration) •
+[API](#-api-endpoints)
+
+</div>
+
+---
+
+## � Screenshots
+
+<div align="center">
+<table>
+<tr>
+<td align="center"><b>💬 Chat Interface</b></td>
+<td align="center"><b>📁 Admin Panel</b></td>
+</tr>
+<tr>
+<td>
+
+```
+┌─────────────────────────────┐
+│  🤖 AI Assistant            │
+├─────────────────────────────┤
+│                             │
+│  👤 มีเอกสารอะไรบ้าง?        │
+│                             │
+│  🤖 พบเอกสารที่เกี่ยวข้อง:    │
+│     - ระเบียบการประชุม.pdf   │
+│     - คู่มือพนักงาน.docx     │
+│                             │
+│  📎 แหล่งอ้างอิง [2 docs]    │
+│                             │
+├─────────────────────────────┤
+│  พิมพ์ข้อความ...      [➤]   │
+└─────────────────────────────┘
+```
+
+</td>
+<td>
+
+```
+┌─────────────────────────────┐
+│  🔐 Admin Panel             │
+├─────────────────────────────┤
+│                             │
+│  ┌───────────────────────┐  │
+│  │   � Drop files here  │  │
+│  │   or click to upload  │  │
+│  └───────────────────────┘  │
+│                             │
+│  📂 Documents (3)           │
+│  ├─ 📕 report.pdf           │
+│  ├─ 📘 manual.docx          │
+│  └─ 📄 notes.txt            │
+│                             │
+└─────────────────────────────┘
+```
+
+</td>
+</tr>
+</table>
+</div>
 
 ---
 
 ## ✨ Features
 
-| Feature | Description |
-|---------|-------------|
-| 📁 **Document Upload** | รองรับ PDF, DOCX, DOC, TXT, MD |
-| 🔍 **RAG Pipeline** | ค้นหาเอกสารที่เกี่ยวข้องก่อนตอบคำถาม |
-| 🇹🇭 **Thai Language** | Optimized สำหรับภาษาไทยด้วย Gemini |
-| 🔄 **LLM Fallback** | Gemini → Ollama → Basic Response |
-| 📎 **Source Links** | ลิงก์ไปยังเอกสารต้นฉบับในคำตอบ |
-| 🎨 **Modern UI** | Dark theme พร้อม Glassmorphism effects |
+<table>
+<tr>
+<td>
 
----
+### 🔍 RAG Pipeline
+ค้นหาเอกสารที่เกี่ยวข้องก่อนตอบคำถาม เพื่อให้คำตอบตรงประเด็นและแม่นยำ
 
-## 🏗️ System Architecture
+</td>
+<td>
 
-```mermaid
-flowchart TD
-    subgraph Frontend
-        A[👤 Admin Panel<br/>localhost:3000/admin] --> |Upload Documents| B[Express API]
-        C[💬 User Chat UI<br/>localhost:3000] --> |Ask Questions| B
-    end
-    
-    subgraph Backend
-        B --> D[Document Processor]
-        D --> |Parse & Chunk| E[Embedding Service]
-        E --> |Store Vectors| F[(SQLite DB)]
-        
-        B --> G[RAG Pipeline]
-        G --> |Search Similar| F
-        G --> |Generate Answer| H{LLM Provider}
-        H --> |Primary| I[Gemini API]
-        H --> |Fallback| J[Ollama Local]
-        H --> |Last Resort| K[Basic Response]
-    end
+### 🇹🇭 Thai Optimized
+ใช้ Google Gemini ที่เก่งภาษาไทยมาก (95/100 LannaAI Score)
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🔄 Smart Fallback
 ```
+Gemini → Ollama → Basic Response
+```
+ไม่พัง แม้ API quota หมด
+
+</td>
+<td>
+
+### � Source Linking
+ทุกคำตอบมีลิงก์ไปยังเอกสารต้นฉบับ พร้อม % ความเกี่ยวข้อง
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 📁 Multi-Format
+รองรับ `PDF` `DOCX` `DOC` `TXT` `MD`
+
+</td>
+<td>
+
+### 🎨 Modern UI
+Dark theme + Glassmorphism + Animations
+
+</td>
+</tr>
+</table>
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Installation
 
-### 1. Clone และติดตั้ง Dependencies
+### Prerequisites
+
+- **Node.js** 18+
+- **Gemini API Key** (ฟรี) - [Get it here](https://ai.google.dev/)
+- **Ollama** (Optional) - [Download](https://ollama.ai/)
+
+### Quick Start
 
 ```bash
-cd node-Rag
+# 1. Clone the repository
+git clone https://github.com/taozeroxii/LLM-RAGOllama.git
+cd LLM-RAGOllama
+
+# 2. Install dependencies
 npm install
-```
 
-### 2. ตั้งค่า Environment Variables
+# 3. Configure environment
+cp .env.example .env
+# Edit .env and add your GEMINI_API_KEY
 
-```bash
-# แก้ไขไฟล์ .env
-GEMINI_API_KEY=your_gemini_api_key_here
-ADMIN_PASSWORD=admin123
-PORT=3000
-LLM_PROVIDER=auto
-```
-
-> 💡 ขอ Gemini API Key ฟรีได้ที่ https://ai.google.dev/
-
-### 3. รัน Server
-
-```bash
+# 4. Start the server
 npm run dev
 ```
 
-### 4. เปิดใช้งาน
+### 🎉 Open in browser
 
-- **Admin Panel**: http://localhost:3000/admin
-- **Chat**: http://localhost:3000
+| Page | URL |
+|------|-----|
+| 💬 Chat | http://localhost:3000 |
+| 📁 Admin | http://localhost:3000/admin |
 
 ---
 
-## 📖 How to Use
+## 📖 Usage
 
-### Admin Panel (จัดการเอกสาร)
+### Admin Panel
 
 1. เปิด http://localhost:3000/admin
-2. Login ด้วยรหัส `admin123` (หรือตามที่ตั้งใน .env)
-3. ลากไฟล์มาวางในพื้นที่ upload หรือคลิกเพื่อเลือกไฟล์
-4. รอให้ระบบประมวลผลเอกสารเสร็จ
+2. Login ด้วยรหัส `admin123`
+3. **Drag & Drop** ไฟล์เอกสาร หรือ คลิกเพื่อเลือก
+4. รอให้ระบบประมวลผล ✅
 
-### Chat (ถามคำถาม)
+### Chat
 
 1. เปิด http://localhost:3000
-2. พิมพ์คำถามเกี่ยวกับเอกสารที่อัพโหลด
-3. AI จะตอบพร้อมแสดงแหล่งอ้างอิง
-4. คลิกที่ลิงก์เอกสารเพื่อดูต้นฉบับ
+2. พิมพ์คำถามเกี่ยวกับเอกสาร
+3. AI ตอบพร้อมแหล่งอ้างอิง
+4. คลิกลิงก์เพื่อดูเอกสารต้นฉบับ
 
 ---
 
 ## ⚙️ Configuration
 
-### Environment Variables (.env)
+### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `GEMINI_API_KEY` | Google Gemini API Key | - |
-| `LLM_PROVIDER` | `gemini`, `ollama`, หรือ `auto` | `auto` |
-| `OLLAMA_BASE_URL` | Ollama server URL | `http://localhost:11434` |
-| `OLLAMA_MODEL` | Ollama model name | `llama3.2` |
-| `ADMIN_PASSWORD` | รหัสผ่าน Admin | `admin123` |
-| `PORT` | Port ของ server | `3000` |
+```env
+# LLM Provider (gemini | ollama | auto)
+LLM_PROVIDER=auto
 
-### LLM Provider Modes
+# Google Gemini (Primary)
+GEMINI_API_KEY=your_api_key_here
 
-- **`gemini`**: ใช้ Gemini เท่านั้น
-- **`ollama`**: ใช้ Ollama เท่านั้น
-- **`auto`** (แนะนำ): ใช้ Gemini ก่อน ถ้าหมด quota จะ fallback ไป Ollama
+# Ollama (Fallback)
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.2
+
+# Security
+ADMIN_PASSWORD=admin123
+
+# Server
+PORT=3000
+```
+
+### Setup Ollama (Recommended)
+
+เมื่อ Gemini quota หมด จะ fallback ไป Ollama อัตโนมัติ:
+
+```bash
+# Install Ollama from https://ollama.ai
+
+# Pull models
+ollama pull llama3.2          # LLM
+ollama pull nomic-embed-text  # Embeddings
+
+# Verify
+ollama list
+```
 
 ---
 
-## 🦙 Setup Ollama (Optional)
+## 🏗️ Architecture
 
-เมื่อ Gemini API quota หมด สามารถใช้ Ollama เป็น fallback ฟรี:
-
-```bash
-# 1. Download Ollama
-# https://ollama.ai/download
-
-# 2. Pull Thai-capable LLM model
-ollama pull llama3.2
-
-# 3. Pull embedding model
-ollama pull nomic-embed-text
-
-# 4. Verify installation
-ollama list
+```mermaid
+flowchart LR
+    subgraph Client
+        A[👤 User] --> B[💬 Chat UI]
+        C[🔐 Admin] --> D[📁 Upload UI]
+    end
+    
+    subgraph Server
+        B --> E[Express API]
+        D --> E
+        E --> F[RAG Pipeline]
+        F --> G[(SQLite)]
+        F --> H{LLM}
+    end
+    
+    subgraph LLM Providers
+        H --> I[Gemini]
+        H --> J[Ollama]
+    end
 ```
 
 ---
@@ -143,131 +249,109 @@ ollama list
 ## 📁 Project Structure
 
 ```
-node-Rag/
-├── src/
-│   ├── index.js                    # Express server entry point
-│   ├── database.js                 # SQLite + vector similarity search
-│   ├── routes/
-│   │   ├── admin.js                # Upload, auth, document management
-│   │   ├── chat.js                 # RAG Q&A endpoint
-│   │   └── documents.js            # Document serving
-│   └── services/
-│       ├── documentProcessor.js    # PDF/DOCX/TXT parsing & chunking
-│       ├── embeddingService.js     # Gemini/Ollama embeddings
-│       └── ragService.js           # RAG pipeline with fallback
-├── public/
-│   ├── index.html                  # Chat UI
-│   ├── style.css                   # Chat styles (dark theme)
-│   ├── app.js                      # Chat JavaScript
-│   └── admin/
-│       ├── index.html              # Admin UI
-│       ├── style.css               # Admin styles
-│       └── app.js                  # Admin JavaScript
-├── uploads/                        # Uploaded document files
-├── data/                           # SQLite database
-│   └── rag.db
-├── package.json
-├── .env                            # Environment configuration
-├── .env.example                    # Example configuration
-└── README.md                       # This file
+📦 LLM-RAGOllama
+├── 📂 src/
+│   ├── 📄 index.js              # Server entry
+│   ├── 📄 database.js           # SQLite + Vector search
+│   ├── 📂 routes/
+│   │   ├── admin.js             # Upload & manage
+│   │   ├── chat.js              # RAG Q&A
+│   │   └── documents.js         # File serving
+│   └── 📂 services/
+│       ├── documentProcessor.js # Parse & chunk
+│       ├── embeddingService.js  # Gemini/Ollama embeddings
+│       └── ragService.js        # RAG with fallback
+├── 📂 public/
+│   ├── 📄 index.html            # Chat page
+│   ├── 📄 style.css             # Chat styles
+│   ├── 📄 app.js                # Chat logic
+│   └── 📂 admin/                # Admin panel
+├── 📂 uploads/                  # Documents
+├── 📂 data/                     # SQLite DB
+├── 📄 .env                      # Config
+└── 📄 package.json
 ```
 
 ---
 
-## 🔧 Technical Details
+## � API Endpoints
 
-### RAG Pipeline Flow
+### Authentication
 
-1. **Document Upload** → Parse PDF/DOCX/TXT
-2. **Text Chunking** → Split into 500-char overlapping chunks
-3. **Embedding Generation** → Create vector embeddings (Gemini/Ollama)
-4. **Vector Storage** → Store in SQLite with JSON embeddings
-5. **Query** → Convert question to embedding
-6. **Similarity Search** → Find top 5 similar chunks (cosine similarity)
-7. **Context Building** → Combine relevant chunks
-8. **LLM Generation** → Generate Thai response with sources
+```http
+POST /api/admin/login
+Content-Type: application/json
 
-### Fallback Chain
-
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────────┐
-│   Gemini    │ ──▶ │   Ollama    │ ──▶ │ Basic Response  │
-│   (API)     │     │   (Local)   │     │ (Show excerpts) │
-└─────────────┘     └─────────────┘     └─────────────────┘
-      ↓ fail              ↓ fail              ↓ always works
+{ "password": "admin123" }
 ```
 
-### Supported File Types
+### Documents
 
-| Type | Extension | Parser |
-|------|-----------|--------|
-| PDF | `.pdf` | pdf-parse |
-| Word | `.docx`, `.doc` | mammoth |
-| Text | `.txt`, `.md` | fs.readFile |
+```http
+# Upload
+POST /api/admin/upload
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+# List
+GET /api/admin/documents
+Authorization: Bearer {token}
+
+# Delete
+DELETE /api/admin/documents/:id
+Authorization: Bearer {token}
+
+# Download
+GET /api/documents/:id/download
+```
+
+### Chat
+
+```http
+POST /api/chat
+Content-Type: application/json
+
+{ "message": "มีระเบียบอะไรบ้าง?" }
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "answer": "จากเอกสารพบว่า...",
+  "sources": [
+    {
+      "documentId": "abc-123",
+      "documentName": "ระเบียบ.pdf",
+      "relevance": 92
+    }
+  ]
+}
+```
 
 ---
 
 ## 🐛 Troubleshooting
 
-### ปัญหา: ชื่อไฟล์ภาษาไทยแสดงผิด
-
-**สาเหตุ**: Multer อ่าน filename เป็น latin1
-**แก้ไข**: ระบบแปลงเป็น UTF-8 อัตโนมัติแล้ว
-
-### ปัญหา: AI ตอบไม่ได้ / API quota หมด
-
-**แก้ไข**:
-1. ติดตั้ง Ollama เป็น fallback (ดูวิธีด้านบน)
-2. หรือรอ quota reset ที่ https://ai.google.dev/
-
-### ปัญหา: Server start ไม่ได้
-
-**ตรวจสอบ**:
-1. Node.js version >= 18
-2. `npm install` สำเร็จ
-3. Port 3000 ว่างอยู่
+| Problem | Solution |
+|---------|----------|
+| ชื่อไฟล์ไทยเพี้ยน | ระบบแก้ไขแล้ว (latin1 → UTF-8) |
+| API quota หมด | ติดตั้ง Ollama เป็น fallback |
+| Server start ไม่ได้ | ตรวจสอบ Node.js ≥18, npm install |
+| ตอบคำถามไม่ได้ | อัพโหลดเอกสารก่อน |
 
 ---
 
-## 📝 API Endpoints
+## � License
 
-### Admin Routes
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/admin/login` | Login with password |
-| POST | `/api/admin/upload` | Upload document |
-| GET | `/api/admin/documents` | List all documents |
-| DELETE | `/api/admin/documents/:id` | Delete document |
-
-### Chat Routes
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/chat` | Send message, get AI response |
-
-### Document Routes
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/documents/:id` | Get document info |
-| GET | `/api/documents/:id/download` | View/download document |
+MIT License © 2025
 
 ---
 
-## 📜 License
+<div align="center">
 
-MIT License
+### Made with ❤️ for Thai Language
 
----
+**[⬆ Back to Top](#-thai-rag-chatbot)**
 
-## 🙏 Credits
-
-- [Google Gemini](https://ai.google.dev/) - LLM & Embeddings
-- [Ollama](https://ollama.ai/) - Local LLM fallback
-- [Express.js](https://expressjs.com/) - Web framework
-- [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) - Database
-- [pdf-parse](https://www.npmjs.com/package/pdf-parse) - PDF parsing
-- [mammoth](https://www.npmjs.com/package/mammoth) - DOCX parsing
-#   L L M - R A G O l l a m a  
- 
+</div>
