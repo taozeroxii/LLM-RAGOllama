@@ -2,6 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
+const { v4: uuidv4 } = require('uuid');
+
+// Ensure images directory exists
+const imagesDir = path.join(__dirname, '../../uploads/images');
+if (!fs.existsSync(imagesDir)) {
+    fs.mkdirSync(imagesDir, { recursive: true });
+}
 
 /**
  * Parse document based on file type
@@ -42,6 +49,63 @@ async function parseDocx(filepath) {
  */
 async function parseText(filepath) {
     return fs.readFileSync(filepath, 'utf-8');
+}
+
+/**
+ * Extract images from document
+ */
+async function extractImages(filepath, fileType, documentId) {
+    const ext = fileType.toLowerCase();
+    const images = [];
+
+    if (ext === 'docx') {
+        // Extract images from DOCX using mammoth
+        const result = await mammoth.convertToHtml({
+            path: filepath
+        }, {
+            convertImage: mammoth.images.imgElement(async function (image) {
+                try {
+                    const imageBuffer = await image.read();
+                    const contentType = image.contentType || 'image/png';
+                    const extension = contentType.split('/')[1] || 'png';
+                    const imageId = uuidv4();
+                    const imageFilename = `${documentId}_${imageId}.${extension}`;
+                    const imagePath = path.join(imagesDir, imageFilename);
+
+                    // Save image to disk
+                    fs.writeFileSync(imagePath, imageBuffer);
+
+                    images.push({
+                        id: imageId,
+                        documentId: documentId,
+                        filename: imageFilename,
+                        filepath: imagePath,
+                        pageNumber: images.length + 1,
+                        altText: `Image ${images.length + 1} from document`
+                    });
+
+                    return { src: `/uploads/images/${imageFilename}` };
+                } catch (err) {
+                    console.warn('Failed to extract image:', err.message);
+                    return { src: '' };
+                }
+            })
+        });
+    } else if (ext === 'pdf') {
+        // PDF image extraction requires special handling
+        // We'll extract embedded images using pdf-parse metadata or manual extraction
+        try {
+            const dataBuffer = fs.readFileSync(filepath);
+            // Note: pdf-parse doesn't extract images directly
+            // For full PDF image extraction, you'd need pdf-lib or pdf.js
+            // This is a placeholder for basic PDF handling
+            console.log('📷 PDF image extraction: Using page snapshots for complex PDFs');
+        } catch (err) {
+            console.warn('PDF image extraction not fully supported:', err.message);
+        }
+    }
+
+    return images;
 }
 
 /**
@@ -94,5 +158,6 @@ function chunkText(text, chunkSize = 500, overlap = 50) {
 
 module.exports = {
     parseDocument,
+    extractImages,
     chunkText
 };

@@ -40,9 +40,27 @@ async function initDatabase() {
         )
     `);
 
+    // Create images table for extracted images
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS images (
+            id TEXT PRIMARY KEY,
+            document_id TEXT NOT NULL,
+            filename TEXT NOT NULL,
+            filepath TEXT NOT NULL,
+            page_number INTEGER,
+            alt_text TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+        )
+    `);
+
     // Create index for faster lookups
     db.exec(`
         CREATE INDEX IF NOT EXISTS idx_chunks_document_id ON chunks(document_id)
+    `);
+
+    db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_images_document_id ON images(document_id)
     `);
 
     console.log('✅ Database initialized');
@@ -66,7 +84,14 @@ function getDocumentById(id) {
 }
 
 function deleteDocument(id) {
-    // Chunks will be deleted automatically due to CASCADE
+    // Get images to delete files
+    const images = getImagesByDocumentId(id);
+    images.forEach(img => {
+        if (fs.existsSync(img.filepath)) {
+            fs.unlinkSync(img.filepath);
+        }
+    });
+    // Chunks and images will be deleted automatically due to CASCADE
     db.prepare('DELETE FROM documents WHERE id = ?').run(id);
 }
 
@@ -100,6 +125,38 @@ function getChunksByDocumentId(documentId) {
 
 function getAllChunksWithEmbeddings() {
     return db.prepare('SELECT c.*, d.original_name as document_name FROM chunks c JOIN documents d ON c.document_id = d.id WHERE c.embedding IS NOT NULL').all();
+}
+
+// Image operations
+function insertImage(image) {
+    const stmt = db.prepare(`
+        INSERT INTO images (id, document_id, filename, filepath, page_number, alt_text)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    stmt.run(image.id, image.documentId, image.filename, image.filepath, image.pageNumber, image.altText);
+}
+
+function insertImages(images) {
+    const stmt = db.prepare(`
+        INSERT INTO images (id, document_id, filename, filepath, page_number, alt_text)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    const insertMany = db.transaction((items) => {
+        for (const image of items) {
+            stmt.run(image.id, image.documentId, image.filename, image.filepath, image.pageNumber, image.altText);
+        }
+    });
+
+    insertMany(images);
+}
+
+function getImagesByDocumentId(documentId) {
+    return db.prepare('SELECT * FROM images WHERE document_id = ? ORDER BY page_number').all(documentId);
+}
+
+function getImageById(id) {
+    return db.prepare('SELECT * FROM images WHERE id = ?').get(id);
 }
 
 // Cosine similarity calculation
@@ -148,5 +205,9 @@ module.exports = {
     insertChunks,
     getChunksByDocumentId,
     getAllChunksWithEmbeddings,
-    searchSimilarChunks
+    searchSimilarChunks,
+    insertImage,
+    insertImages,
+    getImagesByDocumentId,
+    getImageById
 };

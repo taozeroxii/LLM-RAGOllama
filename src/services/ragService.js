@@ -1,6 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { generateEmbedding } = require('./embeddingService');
-const { searchSimilarChunks, getDocumentById, getAllChunksWithEmbeddings } = require('../database');
+const { searchSimilarChunks, getDocumentById, getAllChunksWithEmbeddings, getImagesByDocumentId } = require('../database');
 
 let genAI = null;
 
@@ -194,23 +194,37 @@ async function ragQuery(question) {
     // 4. Generate response (with fallback)
     const answer = await generateResponse(question, context);
 
-    // 5. Prepare sources with document info
+    // 5. Prepare sources with document info and images
     const sourceDocIds = [...new Set(similarChunks.map(c => c.document_id))];
     const sources = sourceDocIds.map(docId => {
         const doc = getDocumentById(docId);
         const relevantChunks = similarChunks.filter(c => c.document_id === docId);
         const maxSimilarity = Math.max(...relevantChunks.map(c => c.similarity));
+
+        // Get images for this document
+        const docImages = getImagesByDocumentId(docId);
+        const images = docImages.map(img => ({
+            id: img.id,
+            url: `/uploads/images/${img.filename}`,
+            alt: img.alt_text || `Image from ${doc?.original_name || 'document'}`
+        }));
+
         return {
             documentId: docId,
             documentName: doc?.original_name || 'Unknown',
             relevance: Math.round(maxSimilarity * 100),
-            preview: relevantChunks[0]?.content.substring(0, 150) + '...'
+            preview: relevantChunks[0]?.content.substring(0, 150) + '...',
+            images: images
         };
     });
 
+    // Collect all images from all sources
+    const allImages = sources.flatMap(s => s.images || []);
+
     return {
         answer,
-        sources
+        sources,
+        images: allImages.slice(0, 5) // Limit to 5 images max
     };
 }
 

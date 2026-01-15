@@ -3,9 +3,9 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
-const { parseDocument, chunkText } = require('../services/documentProcessor');
+const { parseDocument, extractImages, chunkText } = require('../services/documentProcessor');
 const { generateEmbeddings } = require('../services/embeddingService');
-const { insertDocument, insertChunks, getDocuments, deleteDocument, getDocumentById } = require('../database');
+const { insertDocument, insertChunks, insertImages, getDocuments, deleteDocument, getDocumentById, getImagesByDocumentId } = require('../database');
 
 const router = express.Router();
 
@@ -106,13 +106,20 @@ router.post('/upload', authMiddleware, upload.single('file'), async (req, res) =
     }
 });
 
-// Process document: parse, chunk, and generate embeddings
+// Process document: parse, chunk, generate embeddings, and extract images
 async function processDocument(docId, filepath, fileType) {
     console.log(`📄 Processing document: ${docId}`);
 
     // Parse document
     const text = await parseDocument(filepath, fileType);
     console.log(`   Parsed ${text.length} characters`);
+
+    // Extract images from document
+    const images = await extractImages(filepath, fileType, docId);
+    if (images.length > 0) {
+        insertImages(images);
+        console.log(`   Extracted ${images.length} images`);
+    }
 
     // Chunk text
     const chunks = chunkText(text, 500, 50);

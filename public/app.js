@@ -50,7 +50,7 @@ chatForm.addEventListener('submit', async function (e) {
         removeTypingIndicator(typingId);
 
         if (data.success) {
-            addMessage(data.answer, 'assistant', data.sources);
+            addMessage(data.answer, 'assistant', data.sources, data.images);
         } else {
             addMessage(data.error || 'เกิดข้อผิดพลาดในการตอบคำถาม', 'assistant');
         }
@@ -72,13 +72,30 @@ messageInput.addEventListener('keydown', function (e) {
 });
 
 // Add message to chat
-function addMessage(content, type, sources = []) {
+function addMessage(content, type, sources = [], images = []) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}`;
 
     const avatarSvg = type === 'user'
         ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'
         : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>';
+
+    // Images gallery HTML
+    let imagesHtml = '';
+    if (images && images.length > 0) {
+        imagesHtml = `
+            <div class="message-images">
+                <div class="images-title">🖼️ ภาพประกอบจากเอกสาร</div>
+                <div class="images-gallery">
+                    ${images.map(img => `
+                        <div class="image-item" onclick="openImage('${img.url}', '${escapeHtml(img.alt)}')">
+                            <img src="${img.url}" alt="${escapeHtml(img.alt)}" loading="lazy" />
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
 
     let sourcesHtml = '';
     if (sources && sources.length > 0) {
@@ -105,12 +122,20 @@ function addMessage(content, type, sources = []) {
         </div>
         <div class="message-content">
             <p>${escapeHtml(content)}</p>
+            ${imagesHtml}
             ${sourcesHtml}
         </div>
     `;
 
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Open image in modal
+function openImage(url, alt) {
+    modalTitle.textContent = alt || 'ภาพจากเอกสาร';
+    documentFrame.src = url;
+    documentModal.classList.remove('hidden');
 }
 
 // Show typing indicator
