@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - ถามตอบจากเอกสาร</title>
+    <meta name="description" content="AI ผู้ช่วยตอบคำถามจากเอกสารในองค์กร">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+                <span>AI Assistant</span>
+            </div>
+            <a href="/admin" class="admin-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 15v6m-6-3h12M9 6.75V8a3 3 0 006 0V6.75M12 3a3 3 0 00-3 3.75V8a3 3 0 006 0V6.75A3 3 0 0012 3z"></path>
+                </svg>
+                Admin
+            </a>
+        </header>
+
+        <!-- Chat Container -->
+        <main class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <!-- Welcome message -->
+                <div class="message assistant">
+                    <div class="message-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                            <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                            <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                        </svg>
+                    </div>
+                    <div class="message-content">
+                        <p>สวัสดีครับ! ผมคือ AI ผู้ช่วยตอบคำถามจากเอกสาร</p>
+                        <p>ลองถามคำถามเกี่ยวกับเอกสารที่มีในระบบได้เลยครับ 📚</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat-input-area">
+                <form id="chatForm" class="chat-form">
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="พิมพ์คำถามของคุณ..."
+                            rows="1"
+                            autofocus
+                        ></textarea>
+                        <button type="submit" id="sendButton" class="send-button">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+                <p class="input-hint">กด Enter เพื่อส่ง, Shift + Enter เพื่อขึ้นบรรทัดใหม่</p>
+            </div>
+        </main>
+
+        <!-- Document Preview Modal -->
+        <div id="documentModal" class="modal hidden">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modalTitle">เอกสาร</h3>
+                    <button class="modal-close" id="closeModal">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <iframe id="documentFrame" src=""></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
