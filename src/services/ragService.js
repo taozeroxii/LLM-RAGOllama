@@ -14,7 +14,7 @@ function getGenAI() {
 /**
  * Generate response using Gemini
  */
-async function generateResponseGemini(prompt, context) {
+async function generateResponseGemini(prompt, context, sources) {
     const ai = getGenAI();
     if (!ai) {
         throw new Error('Gemini API key not configured');
@@ -22,21 +22,29 @@ async function generateResponseGemini(prompt, context) {
 
     const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const systemPrompt = `คุณเป็น AI ผู้ช่วยที่เชี่ยวชาญในการตอบคำถามจากเอกสาร คุณจะตอบเป็นภาษาไทยเสมอ
+    const systemPrompt = `คุณเป็น AI ผู้ช่วยที่เชี่ยวชาญในการตอบคำถามจากเอกสารองค์กร คุณต้องตอบเป็นภาษาไทยเสมอ
 
-คำแนะนำ:
-1. ตอบคำถามโดยอ้างอิงจากข้อมูลในเอกสารที่ให้มาเท่านั้น
-2. หากไม่พบข้อมูลในเอกสาร ให้บอกว่าไม่พบข้อมูลที่เกี่ยวข้อง
-3. ตอบอย่างกระชับและตรงประเด็น
-4. หากมีข้อมูลจากหลายเอกสาร ให้อ้างอิงแหล่งที่มา
+## หลักการตอบคำถาม:
+1. **ตอบจากเอกสารเท่านั้น** - ห้ามเดาหรือใช้ความรู้ภายนอก
+2. **อ้างอิงแหล่งที่มา** - ระบุชื่อเอกสารที่ใช้ในการตอบ
+3. **ตอบตรงประเด็น** - กระชับ ชัดเจน ครบถ้วน
+4. **ยอมรับเมื่อไม่พบ** - หากไม่มีข้อมูล ให้บอกว่าไม่พบในเอกสาร
 
-เอกสารอ้างอิง:
-${context}`;
+## รูปแบบการตอบ:
+- ใช้ภาษาที่เป็นทางการและสุภาพ
+- จัดลำดับข้อมูลให้เข้าใจง่าย
+- หากมีรายการหลายข้อ ใช้เลขกำกับ
+- อ้างอิงเอกสารด้วยรูปแบบ [ชื่อเอกสาร]
 
-    const result = await model.generateContent([
-        { text: systemPrompt },
-        { text: `คำถาม: ${prompt}` }
-    ]);
+## เอกสารอ้างอิง:
+${context}
+
+## คำถามจากผู้ใช้:
+${prompt}
+
+## คำตอบ (ตอบเป็นภาษาไทย ตรงประเด็น อ้างอิงแหล่งที่มา):`;
+
+    const result = await model.generateContent(systemPrompt);
 
     return result.response.text();
 }
@@ -48,18 +56,21 @@ async function generateResponseOllama(prompt, context) {
     const baseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
     const model = process.env.OLLAMA_MODEL || 'llama3.2';
 
-    const systemPrompt = `คุณเป็น AI ผู้ช่วยที่เชี่ยวชาญในการตอบคำถามจากเอกสาร คุณจะตอบเป็นภาษาไทยเสมอ
+    const systemPrompt = `คุณเป็น AI ผู้ช่วยที่เชี่ยวชาญในการตอบคำถามจากเอกสารองค์กร คุณต้องตอบเป็นภาษาไทยเสมอ
 
-คำแนะนำ:
-1. ตอบคำถามโดยอ้างอิงจากข้อมูลในเอกสารที่ให้มาเท่านั้น
-2. หากไม่พบข้อมูลในเอกสาร ให้บอกว่าไม่พบข้อมูลที่เกี่ยวข้อง
-3. ตอบอย่างกระชับและตรงประเด็น
-4. หากมีข้อมูลจากหลายเอกสาร ให้อ้างอิงแหล่งที่มา
+## หลักการตอบคำถาม:
+1. ตอบจากเอกสารเท่านั้น - ห้ามเดาหรือใช้ความรู้ภายนอก
+2. อ้างอิงแหล่งที่มา - ระบุชื่อเอกสารที่ใช้ในการตอบ
+3. ตอบตรงประเด็น - กระชับ ชัดเจน ครบถ้วน
+4. ยอมรับเมื่อไม่พบ - หากไม่มีข้อมูล ให้บอกว่าไม่พบในเอกสาร
 
-เอกสารอ้างอิง:
+## เอกสารอ้างอิง:
 ${context}
 
-คำถาม: ${prompt}`;
+## คำถามจากผู้ใช้:
+${prompt}
+
+## คำตอบ (ตอบเป็นภาษาไทย ตรงประเด็น อ้างอิงแหล่งที่มา):`;
 
     const response = await fetch(`${baseUrl}/api/generate`, {
         method: 'POST',
@@ -67,7 +78,11 @@ ${context}
         body: JSON.stringify({
             model: model,
             prompt: systemPrompt,
-            stream: false
+            stream: false,
+            options: {
+                temperature: 0.3,  // Lower temperature for more accurate responses
+                num_ctx: 4096      // Larger context window
+            }
         })
     });
 

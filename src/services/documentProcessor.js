@@ -109,15 +109,17 @@ async function extractImages(filepath, fileType, documentId) {
 }
 
 /**
- * Split text into overlapping chunks
+ * Split text into overlapping chunks with Thai-aware boundaries
+ * Larger overlap (100) preserves more context between chunks
  */
-function chunkText(text, chunkSize = 500, overlap = 50) {
+function chunkText(text, chunkSize = 600, overlap = 100) {
     const chunks = [];
 
     // Clean the text
     const cleanText = text
         .replace(/\r\n/g, '\n')
         .replace(/\n{3,}/g, '\n\n')
+        .replace(/\s+/g, ' ')  // Normalize whitespace
         .trim();
 
     if (cleanText.length <= chunkSize) {
@@ -128,24 +130,33 @@ function chunkText(text, chunkSize = 500, overlap = 50) {
     while (start < cleanText.length) {
         let end = start + chunkSize;
 
-        // Try to end at a sentence boundary
+        // Try to end at a natural boundary
         if (end < cleanText.length) {
+            // Priority: Thai sentence endings, then English, then newlines/spaces
+            const thaiEnd = cleanText.lastIndexOf('ๆ', end);  // Thai repetition mark often ends phrases
             const lastPeriod = cleanText.lastIndexOf('.', end);
+            const lastQuestion = cleanText.lastIndexOf('?', end);
             const lastNewline = cleanText.lastIndexOf('\n', end);
             const lastSpace = cleanText.lastIndexOf(' ', end);
 
-            // Find the best break point
-            if (lastPeriod > start + chunkSize / 2) {
+            // Find the best break point (prefer later positions within range)
+            const minPos = start + chunkSize / 2;
+
+            if (lastPeriod > minPos) {
                 end = lastPeriod + 1;
-            } else if (lastNewline > start + chunkSize / 2) {
+            } else if (lastQuestion > minPos) {
+                end = lastQuestion + 1;
+            } else if (thaiEnd > minPos) {
+                end = thaiEnd + 1;
+            } else if (lastNewline > minPos) {
                 end = lastNewline + 1;
-            } else if (lastSpace > start + chunkSize / 2) {
+            } else if (lastSpace > minPos) {
                 end = lastSpace + 1;
             }
         }
 
         const chunk = cleanText.slice(start, end).trim();
-        if (chunk.length > 0) {
+        if (chunk.length > 50) {  // Minimum chunk size
             chunks.push(chunk);
         }
 

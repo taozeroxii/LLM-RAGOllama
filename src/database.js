@@ -178,7 +178,7 @@ function cosineSimilarity(vecA, vecB) {
 }
 
 // Search for similar chunks using cosine similarity
-function searchSimilarChunks(queryEmbedding, topK = 5) {
+function searchSimilarChunks(queryEmbedding, topK = 8) {
     const chunks = getAllChunksWithEmbeddings();
 
     const scoredChunks = chunks.map(chunk => {
@@ -188,10 +188,11 @@ function searchSimilarChunks(queryEmbedding, topK = 5) {
     });
 
     // Sort by similarity descending and return top K
+    // Lower threshold (0.25) for better recall, LLM will filter irrelevant
     return scoredChunks
         .sort((a, b) => b.similarity - a.similarity)
         .slice(0, topK)
-        .filter(chunk => chunk.similarity > 0.3); // Only return if similarity > 0.3
+        .filter(chunk => chunk.similarity > 0.25);
 }
 
 module.exports = {
